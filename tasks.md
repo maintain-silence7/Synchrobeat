@@ -8,6 +8,25 @@
 
 ---
 
+## Implementation Status (2026-11-06)
+
+Offline demo mode is fully implemented and runs on Windows (verified: `flutter build windows --debug`, `flutter analyze` clean, 9/9 tests pass).
+
+**Implemented (local/demo path):**
+* Phase 2.1 — Email/password auth, session restore via secure storage, profile setup on register (avatar emoji + color), demo account `demo@synchrobeat.app / demo1234`. Google OAuth **not** implemented (needs Supabase OAuth provider config).
+* Phase 2.2 — `file_picker` ingestion with extension + 100 MB checks; `audiotags` ID3 read with filename fallback; duration probed via just_audio; artwork extraction + copy.
+* Phase 2.3 — Upload pipeline implemented against the **local vault** (copy into app storage + JSON index). R2 pre-signed PUT flow **not wired** (needs a provisioned R2 bucket + edge function secrets) — the same boundary (`LocalTrackRepository`) is where the R2 client plugs in.
+* Phase 3.1/3.2 — just_audio playback with mini player, full player screen, scrubber, next/previous, auto-advance. `AudioPlayerHandler` (audio_service) written for Android/iOS/macOS (untested there). Web = `just_audio_web`; Windows = `just_audio_windows`.
+* Phase 4.1 — Create/join rooms with 6-char codes, capacity check (10), host handover on leave, deep-link route `/join/:code`. Rooms are **in-memory per session** (demo) — no Supabase Realtime yet.
+* Phase 4.2/4.3 — `TimeSyncService` (moving-average NTP-style offset, 60s resync) and `SyncPlaybackController` (tier-1/2 drift correction: 1.05×/0.95× warp, hard seek > 350 ms, 3s monitor) implemented and unit-tested. In demo mode the clock is loopback (skew ≈ 0) until a Supabase RPC/WebSocket transport exists.
+* Phase 5.1 — Shared queue: add/remove/reorder, tap-to-play, auto-advance from room queue.
+* Phase 5.2 — Presence avatars with host/DJ badge, host transfer, ephemeral emoji reactions (floating overlay, local broadcast).
+* Phase 6 — Started: 8 unit tests (sync engine) + 1 widget smoke test. Deployment/release untouched.
+
+**Not implemented / needs credentials:** Google OAuth, R2 uploads, Supabase Realtime sync across devices, Postgres RPC room lifecycle, background-service hardening tests, release signing/builds.
+
+---
+
 ## Phase 1: Environment Setup, Architecture & Database Foundation
 
 ### 1.1 Project Initialization & Cross-Platform Config
